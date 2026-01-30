@@ -21,11 +21,35 @@
             align-items: center;
         }
 
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
         h1 {
             color: white;
-            margin-bottom: 30px;
             font-size: 2rem;
             text-align: center;
+        }
+
+        .about-link {
+            position: absolute;
+            right: 0;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .about-link:hover {
+            opacity: 1;
         }
 
         .stopwatches-container {
@@ -154,10 +178,112 @@
             transform: translateY(-1px);
         }
 
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .modal h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .modal p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .modal ul {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            margin-left: 20px;
+        }
+
+        .modal li {
+            margin-bottom: 8px;
+        }
+
+        .modal code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
         @media (max-width: 600px) {
+            header {
+                margin-bottom: 20px;
+            }
+
             h1 {
                 font-size: 1.5rem;
-                margin-bottom: 20px;
+            }
+
+            .about-link {
+                position: static;
+                margin-top: 10px;
+            }
+
+            header {
+                flex-direction: column;
             }
 
             .stopwatches-container {
@@ -177,13 +303,67 @@
                 padding: 12px 30px;
                 font-size: 1rem;
             }
+
+            .modal {
+                padding: 30px 20px;
+            }
+
+            .modal h2 {
+                font-size: 1.5rem;
+            }
+
+            .modal h3 {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>TimeCops</h1>
+    <header>
+        <h1>TimeCops</h1>
+        <a class="about-link" id="aboutLink">About</a>
+    </header>
     <div class="stopwatches-container" id="stopwatchesContainer"></div>
     <button class="add-button" id="addButton">+ Add Stopwatch</button>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <h2>TimeCops</h2>
+            <p>A simple, elegant stopwatch app for tracking multiple timers simultaneously.</p>
+
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Multiple Stopwatches:</strong> Track as many timers as you need at once</li>
+                <li><strong>Custom Names:</strong> Click any label to name your stopwatch</li>
+                <li><strong>Easy Controls:</strong> Click the stopwatch body to start/stop timing</li>
+                <li><strong>Precise Timing:</strong> Millisecond accuracy for all your timing needs</li>
+                <li><strong>URL Templates:</strong> Your stopwatch setup is saved in the URL - bookmark it to create reusable templates</li>
+            </ul>
+
+            <h3>How to Use</h3>
+            <ul>
+                <li><strong>Start/Stop:</strong> Click on the stopwatch circle to toggle timing</li>
+                <li><strong>Name:</strong> Click on the label below the time to set a custom name</li>
+                <li><strong>Add:</strong> Click "+ Add Stopwatch" to create more timers</li>
+                <li><strong>Delete:</strong> Hover over a stopwatch and click the × button</li>
+                <li><strong>Save Template:</strong> Name your stopwatches and bookmark the page - the URL contains your configuration</li>
+            </ul>
+
+            <h3>Template Examples</h3>
+            <p>Create different setups for different needs:</p>
+            <ul>
+                <li><strong>Pomodoro:</strong> Set up timers for "Work", "Short Break", "Long Break"</li>
+                <li><strong>Workout:</strong> Track different exercises or intervals</li>
+                <li><strong>Cooking:</strong> Time multiple dishes simultaneously</li>
+                <li><strong>Team Meetings:</strong> Track speaker time or agenda items</li>
+            </ul>
+
+            <p style="margin-top: 30px; text-align: center; color: #999; font-size: 0.9rem;">
+                Made with ❤️ for everyone who needs to track time
+            </p>
+        </div>
+    </div>
 
     <script>
         class Stopwatch {
@@ -397,6 +577,25 @@
 
         // Load stopwatches from URL on page load
         loadFromURL();
+
+        // About modal
+        const aboutLink = document.getElementById('aboutLink');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        aboutLink.addEventListener('click', () => {
+            modalOverlay.classList.add('active');
+        });
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
