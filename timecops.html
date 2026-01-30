@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeCops - Simple Stopwatch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .stopwatches-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 250px));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .stopwatch {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            padding: 20px;
+        }
+
+        .stopwatch:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stopwatch:active {
+            transform: translateY(-2px);
+        }
+
+        .stopwatch.running {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stopwatch .time {
+            font-size: 2rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.05em;
+        }
+
+        .stopwatch .label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .stopwatch .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .stopwatch:hover .delete-btn {
+            display: flex;
+        }
+
+        .stopwatch .delete-btn:hover {
+            background: rgba(255, 0, 0, 0.9);
+        }
+
+        .add-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .add-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .add-button:active {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+
+            .stopwatches-container {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .stopwatch .time {
+                font-size: 1.5rem;
+            }
+
+            .stopwatch .label {
+                font-size: 0.8rem;
+            }
+
+            .add-button {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>TimeCops</h1>
+    <div class="stopwatches-container" id="stopwatchesContainer"></div>
+    <button class="add-button" id="addButton">+ Add Stopwatch</button>
+
+    <script>
+        class Stopwatch {
+            constructor(container) {
+                this.container = container;
+                this.element = null;
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.isRunning = false;
+                this.intervalId = null;
+                this.create();
+            }
+
+            create() {
+                this.element = document.createElement('div');
+                this.element.className = 'stopwatch';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.destroy();
+                });
+
+                const timeDisplay = document.createElement('div');
+                timeDisplay.className = 'time';
+                timeDisplay.textContent = '00:00:000';
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = 'click to start';
+
+                this.element.appendChild(deleteBtn);
+                this.element.appendChild(timeDisplay);
+                this.element.appendChild(label);
+
+                this.element.addEventListener('click', () => this.toggle());
+
+                this.container.appendChild(this.element);
+            }
+
+            toggle() {
+                if (this.isRunning) {
+                    this.stop();
+                } else {
+                    this.start();
+                }
+            }
+
+            start() {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.startTime = Date.now() - this.elapsedTime;
+                this.element.classList.add('running');
+                this.updateLabel('click to stop');
+
+                this.intervalId = setInterval(() => {
+                    this.elapsedTime = Date.now() - this.startTime;
+                    this.updateDisplay();
+                }, 10);
+            }
+
+            stop() {
+                if (!this.isRunning) return;
+
+                this.isRunning = false;
+                clearInterval(this.intervalId);
+                this.element.classList.remove('running');
+                this.updateLabel('click to start');
+            }
+
+            updateDisplay() {
+                const totalMs = this.elapsedTime;
+                const minutes = Math.floor(totalMs / 60000);
+                const seconds = Math.floor((totalMs % 60000) / 1000);
+                const milliseconds = totalMs % 1000;
+
+                const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
+
+                const timeDisplay = this.element.querySelector('.time');
+                timeDisplay.textContent = timeString;
+            }
+
+            updateLabel(text) {
+                const label = this.element.querySelector('.label');
+                label.textContent = text;
+            }
+
+            destroy() {
+                this.stop();
+                this.element.remove();
+                const index = stopwatches.indexOf(this);
+                if (index > -1) {
+                    stopwatches.splice(index, 1);
+                }
+            }
+        }
+
+        const stopwatches = [];
+        const container = document.getElementById('stopwatchesContainer');
+        const addButton = document.getElementById('addButton');
+
+        function addStopwatch() {
+            const stopwatch = new Stopwatch(container);
+            stopwatches.push(stopwatch);
+        }
+
+        addButton.addEventListener('click', addStopwatch);
+
+        // Create initial stopwatch
+        addStopwatch();
+    </script>
+</body>
+</html>
