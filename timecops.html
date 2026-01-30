@@ -581,6 +581,7 @@
                 const label = document.createElement('div');
                 label.className = 'label';
                 label.textContent = 'click to name';
+                label.setAttribute('tabindex', '0');
 
                 this.element.appendChild(deleteBtn);
                 this.element.appendChild(timeDisplay);
@@ -596,6 +597,14 @@
                 label.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.editName();
+                });
+
+                label.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.editName();
+                    }
                 });
 
                 this.container.appendChild(this.element);
@@ -658,12 +667,40 @@
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         input.blur();
+                        // Focus next stopwatch label
+                        const nextStopwatch = this.getNextStopwatch();
+                        if (nextStopwatch) {
+                            nextStopwatch.focusLabel();
+                        }
+                    } else if (e.key === 'Tab') {
+                        // Let default Tab behavior happen, but save first
+                        e.preventDefault();
+                        input.blur();
+                        const nextStopwatch = e.shiftKey ? this.getPreviousStopwatch() : this.getNextStopwatch();
+                        if (nextStopwatch) {
+                            nextStopwatch.focusLabel();
+                        }
                     } else if (e.key === 'Escape') {
                         e.preventDefault();
                         this.name = currentName;
                         this.updateLabel();
                     }
                 });
+            }
+
+            focusLabel() {
+                const label = this.element.querySelector('.label');
+                label.focus();
+            }
+
+            getNextStopwatch() {
+                const currentIndex = stopwatches.indexOf(this);
+                return stopwatches[currentIndex + 1] || null;
+            }
+
+            getPreviousStopwatch() {
+                const currentIndex = stopwatches.indexOf(this);
+                return stopwatches[currentIndex - 1] || null;
             }
 
             updateDisplay() {
