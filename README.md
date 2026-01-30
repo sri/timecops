@@ -136,6 +136,8 @@ MIT License - feel free to use this project for personal or commercial purposes.
 
 ## Acknowledgments
 
+Built with [Claude Code](https://claude.com/claude-code) using the Claude Sonnet 4.5 model.
+
 Made with ❤️ for everyone who needs to track time efficiently.
 
 ---
