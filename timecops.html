@@ -79,6 +79,30 @@
             font-size: 0.9rem;
             opacity: 0.7;
             margin-top: 10px;
+            cursor: text;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .stopwatch .label:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .stopwatch.running .label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stopwatch .label input {
+            background: none;
+            border: none;
+            color: inherit;
+            font: inherit;
+            text-align: center;
+            width: 100%;
+            outline: none;
         }
 
         .stopwatch .delete-btn {
@@ -170,6 +194,7 @@
                 this.elapsedTime = 0;
                 this.isRunning = false;
                 this.intervalId = null;
+                this.name = '';
                 this.create();
             }
 
@@ -191,13 +216,23 @@
 
                 const label = document.createElement('div');
                 label.className = 'label';
-                label.textContent = 'click to start';
+                label.textContent = 'click to name';
 
                 this.element.appendChild(deleteBtn);
                 this.element.appendChild(timeDisplay);
                 this.element.appendChild(label);
 
-                this.element.addEventListener('click', () => this.toggle());
+                this.element.addEventListener('click', (e) => {
+                    if (e.target === label || e.target.parentElement === label) {
+                        return;
+                    }
+                    this.toggle();
+                });
+
+                label.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.editName();
+                });
 
                 this.container.appendChild(this.element);
             }
@@ -216,7 +251,7 @@
                 this.isRunning = true;
                 this.startTime = Date.now() - this.elapsedTime;
                 this.element.classList.add('running');
-                this.updateLabel('click to stop');
+                this.updateLabel();
 
                 this.intervalId = setInterval(() => {
                     this.elapsedTime = Date.now() - this.startTime;
@@ -230,7 +265,39 @@
                 this.isRunning = false;
                 clearInterval(this.intervalId);
                 this.element.classList.remove('running');
-                this.updateLabel('click to start');
+                this.updateLabel();
+            }
+
+            editName() {
+                const label = this.element.querySelector('.label');
+                const currentName = this.name;
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentName;
+                input.placeholder = 'Enter name...';
+
+                label.textContent = '';
+                label.appendChild(input);
+                input.focus();
+                input.select();
+
+                const saveName = () => {
+                    this.name = input.value.trim();
+                    this.updateLabel();
+                };
+
+                input.addEventListener('blur', saveName);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        input.blur();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.name = currentName;
+                        this.updateLabel();
+                    }
+                });
             }
 
             updateDisplay() {
@@ -245,9 +312,18 @@
                 timeDisplay.textContent = timeString;
             }
 
-            updateLabel(text) {
+            updateLabel() {
                 const label = this.element.querySelector('.label');
-                label.textContent = text;
+
+                if (this.name) {
+                    label.textContent = this.name;
+                } else if (this.isRunning) {
+                    label.textContent = 'running...';
+                } else if (this.elapsedTime > 0) {
+                    label.textContent = 'stopped';
+                } else {
+                    label.textContent = 'click to name';
+                }
             }
 
             destroy() {
