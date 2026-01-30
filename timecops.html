@@ -597,6 +597,15 @@
                 modalOverlay.classList.remove('active');
             }
         });
+
+        // Warn before closing if any timer has been started
+        window.addEventListener('beforeunload', (e) => {
+            const hasActiveTimers = stopwatches.some(sw => sw.elapsedTime > 0);
+            if (hasActiveTimers) {
+                e.preventDefault();
+                e.returnValue = ''; // Required for Chrome
+            }
+        });
     </script>
 </body>
 </html>
