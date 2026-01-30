@@ -5,6 +5,8 @@ A simple, elegant stopwatch app for tracking multiple timers simultaneously. Per
 ![TimeCops](https://img.shields.io/badge/status-active-success.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+**[🚀 Try it live!](https://sri.github.io/timecops/timecops.html)**
+
 ## Features
 
 - **Multiple Stopwatches** - Track as many timers as you need simultaneously
