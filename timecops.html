@@ -285,6 +285,8 @@
                 const saveName = () => {
                     this.name = input.value.trim();
                     this.updateLabel();
+                    shouldPersist = true;
+                    saveToURL();
                 };
 
                 input.addEventListener('blur', saveName);
@@ -333,22 +335,68 @@
                 if (index > -1) {
                     stopwatches.splice(index, 1);
                 }
+                shouldPersist = true;
+                saveToURL();
             }
         }
 
         const stopwatches = [];
         const container = document.getElementById('stopwatchesContainer');
         const addButton = document.getElementById('addButton');
+        let shouldPersist = false;
 
-        function addStopwatch() {
+        function addStopwatch(name = '', fromURL = false) {
             const stopwatch = new Stopwatch(container);
+            if (name) {
+                stopwatch.name = name;
+                stopwatch.updateLabel();
+            }
             stopwatches.push(stopwatch);
+
+            if (!fromURL && shouldPersist) {
+                saveToURL();
+            }
         }
 
-        addButton.addEventListener('click', addStopwatch);
+        function saveToURL() {
+            if (!shouldPersist) return;
 
-        // Create initial stopwatch
-        addStopwatch();
+            const names = stopwatches.map(sw => sw.name || '');
+            const encoded = names.map(name => encodeURIComponent(name)).join('&');
+
+            if (encoded) {
+                history.replaceState(null, '', '#timeclocks=' + encoded);
+            } else {
+                history.replaceState(null, '', window.location.pathname);
+            }
+        }
+
+        function loadFromURL() {
+            const hash = window.location.hash.substring(1);
+
+            if (hash.startsWith('timeclocks=')) {
+                shouldPersist = true;
+                const encoded = hash.substring(11); // Remove 'timeclocks='
+
+                if (encoded) {
+                    const names = encoded.split('&').map(name => decodeURIComponent(name));
+                    names.forEach(name => addStopwatch(name, true));
+                } else {
+                    addStopwatch('', true);
+                }
+            } else {
+                // No saved state, create one default stopwatch, don't persist yet
+                addStopwatch('', true);
+            }
+        }
+
+        addButton.addEventListener('click', () => {
+            shouldPersist = true;
+            addStopwatch();
+        });
+
+        // Load stopwatches from URL on page load
+        loadFromURL();
     </script>
 </body>
 </html>
